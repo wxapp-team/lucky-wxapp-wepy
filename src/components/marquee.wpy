@@ -1,0 +1,73 @@
+<style lang="less">
+.marquee-list {
+  .container {
+    height: 144px;
+    width: 335px;
+    margin-left: 25px;
+    margin-top: 10px;
+    overflow: hidden;
+  }
+  .list-item {
+    height: 24px;
+  }
+}
+</style>
+<template>
+  <view class="marquee-list">
+    <view class="title">
+      {{title}}
+    </view>
+    <view class="container">
+      <view class="con1">
+        <repeat for="{{dataList}}" index="index" item="item" key="key">
+          <view class="list-item">{{item.title}}</view>
+        </repeat>
+      </view>
+      <view class="con2"></view>
+    </view>
+  </view>
+</template>
+<script>
+  import wepy from 'wepy'
+
+  export default class Marquee extends wepy.component {
+    props = {
+      dataList: {
+        type: Array,
+        default: []
+      }
+    }
+
+    data = {
+    }
+
+    events = {}
+
+    methods = {
+    }
+
+    onLoad () {
+      var area = document.querySelector('.container');
+      var con1 = document.querySelector('.con1');
+      var con2 = document.querySelector('.con2');
+      var speed = 50;
+      area.scrollTop = 0;
+      debugger;
+      con2.innerHTML = con1.innerHTML;
+      function scrollUp() {
+        if (area.scrollTop >= con1.scrollHeight) {
+          area.scrollTop = 0;
+        } else {
+          area.scrollTop ++;
+        }
+      }
+      var myScroll = setInterval(scrollUp, speed);
+      area.onmouseover = function() {
+        clearInterval(myScroll);
+      }
+      area.onmouseout = function() {
+        myScroll = setInterval(scrollUp, speed);
+      }
+    }
+  }
+</script>

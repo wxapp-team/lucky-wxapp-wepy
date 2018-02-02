@@ -1,0 +1,51 @@
+<template>
+  <view class="container detail-content">
+    <import src="../components/wxParse/wxParse.wxml"/>
+    <template is="wxParse" data="{{wxParseData:article.nodes}}"></template>
+  </view>
+</template>
+
+<script>
+import wepy from 'wepy';
+import Toast from 'wepy-com-toast';
+import L from '@/utils';
+import WxParse from '@/components/wxParse/wxParse.js'
+
+export default class Intro extends wepy.page {
+  config = {
+    navigationBarTitleText: '说明书'
+  };
+  components = {
+    toast: Toast
+  };
+
+  data = {};
+
+  computed = {};
+
+  methods = {};
+
+  events = {};
+
+  onLoad() {
+    this.activityId = this.$parent.globalData.activityId;
+    L.post(`/APView/activityIntroduction/queryObject/${this.activityId}`).then(resp => {
+      const {status, data, message} = resp;
+
+      if (status) {
+        const content = data.intrContent.replace(/\[\'/g, '[').replace(/\'\]/g, ']');
+        WxParse.wxParse('article', 'html', content, this, 5);
+      } else {
+        wx.showModal({title: '请求错误', content: message, showCancel: false});
+      }
+    });
+  }
+}
+</script>
+
+<style lang="less">
+.detail-content {
+  margin-left: 20rpx;
+  margin-right: 20rpx;
+}
+</style>

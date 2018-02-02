@@ -1,0 +1,187 @@
+<template>
+  <view class="lucky-page container">
+    <image class="bg-shake" src="/assets/images/bg-shake.jpg" />
+    <view class="result {{visible ? 'show' : ''}}">
+      <view class="title">中奖了</view>
+      <view class="content">恭喜您获得了{{prize.name}}</view>
+      <view class="footer">
+        <button plain @tap="hideModal">关闭</button>
+        <button plain class="share" open-type="share">分享</button>
+      </view>
+    </view>
+    <toast />
+  </view>
+</template>
+
+<style lang="less">
+.lucky-page {
+  .bg-shake {
+    width: 100%;
+    height: 100%;
+  }
+  .result {
+    width: 70%;
+    height: 260rpx;
+    position: absolute;
+    top: 200rpx;
+    left: 0;
+    right: 0;
+    margin: auto;
+    display: flex;
+    flex-direction:column;
+    transition: all .3s;
+    opacity: 0;
+    background:#F8F8F8;
+    border-radius:5px;
+    overflow: hidden;
+    &.show {
+      opacity: 1;
+    }
+    .title {
+      flex: none;
+      color: #000;
+      font-size: 17px;
+      display:flex;
+      justify-content:center;
+      padding:18rpx 0 0 0;
+    }
+    .footer {
+      flex: none;
+      display: flex;
+      button {
+        width: 100%;
+        border:0;
+        border-radius:0;
+        border-left:1rpx solid #ddd;
+        border-top:1px solid #ddd;
+        &.share {
+          color: red;
+        }
+      }
+    }
+    .content {
+      flex: auto;
+      display:flex;
+      color: #666;
+      align-items: center;
+      justify-content: center;
+      font-size: 17px;
+    }
+  }
+}
+</style>
+
+<script>
+import wepy from 'wepy';
+import Toast from 'wepy-com-toast';
+
+export default class Lucky extends wepy.page {
+  config = {
+    navigationBarTitleText: '摇一摇'
+  };
+
+  components = {
+    toast: Toast
+  };
+
+  data = {
+    shake: {
+      lastTime: 0,
+      lastX: 0,
+      lastY: 0,
+      lastZ: 0,
+      shakeSpeed: 70
+    },
+    visible: false,
+    prize: {
+      name: '',
+    }
+  };
+
+  computed = {};
+
+  methods = {
+    hideModal() {
+      this.onHideModal();
+    }
+  };
+
+  events = {};
+
+  onLoad() {
+    wx.onAccelerometerChange(this.onShake);
+  }
+
+  onUnload() {
+    wx.stopAccelerometer();
+  }
+
+  onHideModal = () => {
+    this.visible = false;
+    this.$apply();
+  }
+
+  onShake = e => {
+    var nowTime = new Date().getTime();
+    console.log(nowTime - this.shake.lastTime);
+    if (nowTime - this.shake.lastTime > 100) {
+      var diffTime = nowTime - this.shake.lastTime;
+      this.shake.lastTime = nowTime;
+      const x = e.x;
+      const y = e.y;
+      const z = e.z;
+      var speed =
+        Math.abs(
+          x + y + z - this.shake.lastX - this.shake.lastY - this.shake.lastZ
+        ) /
+        diffTime *
+        10000;
+
+      if (speed > this.shake.shakeSpeed) {
+        wx.showLoading({
+          title: '红包正向你砸来'
+        });
+        setTimeout(() => {
+          wx.hideLoading();
+          this.visible = true;
+          this.$apply();
+        }, 2000);
+      }
+      this.shake.lastX = x;
+      this.shake.lastY = y;
+      this.shake.lastZ = z;
+    }
+  };
+
+  onShareAppMessage(options) {
+    var shareObj = {
+      title: '转发的标题', // 默认是小程序的名称(可以写slogan等)
+      path: '/pages/index', // 默认是当前页面，必须是以‘/’开头的完整路径
+      imgUrl: '',
+      success: (res) => {
+        // 转发成功之后的回调
+        if (res.errMsg === 'shareAppMessage:ok') {
+        }
+      },
+      fail: (res) => {
+        // 转发失败之后的回调
+        if (res.errMsg === 'shareAppMessage:fail cancel') {
+          // 用户取消转发
+        } else if (res.errMsg === 'shareAppMessage:fail') {
+          // 转发失败，其中 detail message 为详细失败信息
+        }
+      },
+      complete: () => {
+        this.onHideModal();
+      }
+    };
+
+    if (options.from === 'button') {
+      var eData = options.target.dataset;
+      console.log(eData.name); // shareBtn // 此处可以修改 shareObj 中的内容
+      shareObj.path = '/pages/btnname/btnname?btn_name=' + eData.name;
+    } // 返回shareObj
+    return shareObj;
+  }
+}
+</script>

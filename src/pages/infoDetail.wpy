@@ -1,0 +1,72 @@
+<template>
+  <view class="container detail-page">
+    <import src="../components/wxParse/wxParse.wxml"/>
+    <view class="detail-content">
+      <view class="title">{{detail.activityInformationTitle}}</view>
+      <view class="time">发布时间：{{detail.createTime}}</view>
+      <template is="wxParse" data="{{wxParseData:article.nodes}}"></template>
+    </view>
+  </view>
+</template>
+
+<script>
+  import wepy from 'wepy'
+  import WxParse from '@/components/wxParse/wxParse.js'
+  import L from '@/utils';
+  
+  export default class InfoDetail extends wepy.page {
+    config = {
+      navigationBarTitleText: '资讯'
+    }
+    components = {
+    }
+
+    data = {
+      detail: {}
+    }
+
+    computed = {}
+
+    methods = {}
+
+    events = {}
+
+    onLoad(options) {
+      L.post(`/APView/activityInformation/queryObject/${options.id}`).then(resp => {
+        const {data, status, message} = resp;
+        if (status) {
+          const {createTime, activityInformationContent, activityInformationTitle} = data;
+          if (createTime) {
+            let time = createTime ? L.formatAllTime(new Date(createTime)) : '';
+            this.detail = {createTime: time, activityInformationTitle};
+          }
+          const content = activityInformationContent.replace(/\[\'/g, '[').replace(/\'\]/g, ']');
+          WxParse.wxParse('article', 'html', content, this, 5);
+          this.$apply();
+        } else {
+          wx.showModal({title: '请求错误', content: message, showCancel: false});
+        }
+      });
+    }
+  }
+</script>
+
+<style lang="less">
+.detail-content {
+  margin-left: 20rpx;
+  margin-right: 20rpx;
+}
+.detail-page {
+  .title {
+    line-height: 2em;
+    text-align: center;
+    font-size: 1.4em;
+  }
+  .time {
+    line-height: 2em;
+    text-align: center;
+    color: #999;
+    font-size: 14px;
+  }
+}
+</style>

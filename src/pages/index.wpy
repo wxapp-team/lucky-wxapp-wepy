@@ -1,0 +1,184 @@
+<template>
+  <view class="home-page container">
+    <swiper indicator-dots autoplay interval="{{interval}}" duration="{{duration}}" style="height: 400rpx">
+      <block wx:for="{{imgUrls}}" wx:key="key">
+        <swiper-item>
+          <image src="{{item.url}}" class="slide-image"/>
+        </swiper-item>
+      </block>
+    </swiper>
+
+    <view class="menu-list">
+      <navigator url="/pages/lucky" hover-class="none" class="navigator-bs">
+        <span><i class="iconfont">&#xe754;</i></span>
+        <view>抽奖</view>
+      </navigator>
+      <navigator url="/pages/intro" hover-class="none" class="navigator-sms">
+        <span><i class="iconfont">&#xe889;</i></span>
+        <view>说明</view>
+      </navigator>
+      <navigator url="/pages/my" hover-class="none" class="navigator-zb">
+        <span><i class="iconfont">&#xe892;</i></span>
+        <view>我的</view>
+      </navigator>
+      <navigator url="/pages/information" hover-class="none" class="navigator-zb">
+        <span><i class="iconfont">&#xe892;</i></span>
+        <view>资讯</view>
+      </navigator>
+    </view>
+    <view class="footer">
+      <swiper autoplay vertical circular interval="{{interval}}" duration="{{duration}}">
+        <block wx:for="{{luckys}}" wx:key="key">
+          <swiper-item>
+            <view>{{item.title}}</view>
+          </swiper-item>
+        </block>
+      </swiper>
+    </view>
+    <toast />
+  </view>
+</template>
+
+<script>
+import wepy from 'wepy';
+import Toast from 'wepy-com-toast';
+import L from '@/utils';
+
+export default class Index extends wepy.page {
+  config = {
+    navigationBarTitleText: '抽奖'
+  };
+  components = {
+    toast: Toast,
+  };
+
+  data = {
+    activityId: '',
+    imgUrls: [],
+    interval: 5000,
+    duration: 1000,
+    luckys: []
+  };
+
+  computed = {};
+
+  methods = {};
+
+  events = {};
+
+  onShow() {
+  }
+
+  onLoad() {
+    this.activityId = this.$parent.globalData.activityId;
+
+    wx.login({
+      success: (info) => {
+        L.post(`/APView/minitoken/getToken/${this.activityId}/${info.code}`, {
+          code: info.code,
+          activityId: this.activityId
+        }).then(resp => {
+          const {data, status} = resp;
+          if (status) {
+            wx.setStorageSync('token', data);
+            this.getAdertiseImages();
+
+            this.getLuckysResult();
+          }
+        });
+      }
+    });
+  }
+
+  getAdertiseImages = () => {
+    L.post('/APView/adertisePic/getPicList/' + this.activityId).then(({data, status, message}) => {
+      if (status) {
+        this.imgUrls = data.map(item => ({
+          url: item.advertisePicUrl.replace(/'/g, '')
+        }));
+        this.$apply();
+      } else {
+        wx.showModal({title: '请求错误', content: message, showCancel: false});
+      }
+    });
+  }
+
+  getLuckysResult = () => {
+    L.post(`/APView/common/queryLastPartakeExtList/${this.activityId}/100/10`).then(({data, status, message}) => {
+      if (status) {
+        this.luckys = data.map(item => ({title: `用户${item.nickname}，抽中${item.productName}`}));
+        this.$apply();
+      } else {
+        wx.showModal({title: '请求错误', content: message, showCancel: false});
+      }
+    });
+  }
+}
+</script>
+
+<style lang="less">
+swiper {
+  width: 100%;
+}
+
+.footer {
+  font-size: 14px;
+  text-align: center;
+  height: 100rpx;
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+}
+
+.menu-list {
+  width: 100%;
+  display: flex;
+  justify-content: space-around;
+  padding: 60rpx 0;
+  border-bottom: 1px solid #efefef;
+  navigator {
+    flex: none;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+    span {
+      width: 120rpx;
+      height: 120rpx;
+      border-radius: 50%;
+      color: #fff;
+      display: block;
+      position: relative;
+      text-align: center;
+      line-height: 120rpx;
+      margin-bottom: 10rpx;
+      & > i {
+        font-size: 1.6em;
+      }
+    }
+    view {
+      font-size: 14px;
+    }
+    &.navigator-bs span {
+      background-color: #f44336;
+    }
+    &.navigator-sms span {
+      background-color: #9c27b0;
+    }
+    &.navigator-zb span {
+      background-color: #03a9f4;
+    }
+  }
+}
+
+.phone {
+  color: #f44336;
+  font-size: 14px;
+  margin-top: 20rpx;
+}
+
+.slide-image {
+  height: 100%;
+  width: 100%;
+}
+</style>

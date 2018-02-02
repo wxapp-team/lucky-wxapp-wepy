@@ -1,0 +1,101 @@
+<template>
+  <view class="container information-page">
+    <repeat for="{{dataItem.dataList}}" index="index" item="item" key="key">
+      <navigator url="/pages/infoDetail?id={{item.activityInformationId}}">
+        <view class="info-list-item">
+          <view class="img-block">
+            <image mode="aspectFit" src="{{item.infoIconUrl}}" />
+          </view> 
+          <view class="title-block">{{item.activityInformationTitle}}</view>
+        </view>
+      </navigator>
+    </repeat>
+  </view>
+</template>
+
+<script>
+import wepy from 'wepy';
+import Toast from 'wepy-com-toast';
+import L from '@/utils';
+
+export default class Information extends wepy.page {
+  config = {
+    navigationBarTitleText: '资讯',
+    onReachBottomDistance: true
+  };
+  components = {
+    toast: Toast
+  };
+
+  data = {
+    dataList: [],
+    currentPage: 1,
+    totalPage: 0,
+  };
+
+  computed = {};
+
+  methods = {};
+
+  events = {};
+
+  onLoad() {
+    this.activityId = this.$parent.globalData.activityId;
+    this.getInformations();
+  }
+
+  onReachBottom () {
+    if (this.currentPage <= this.totalPage) {
+      this.getInformations();
+    }
+  }
+
+  getInformations = () => {
+    L.post(`/APView/activityInformation/getListPage/${this.activityId}`, {
+      currentPage: this.currentPage,
+      showCount: 10,
+      paramMap: {
+        activityId: this.activityId
+      }
+    }).then(resp => {
+      const {data, status, message} = resp;
+      if (status) {
+        data.dataList.forEach(item => {
+          item.infoIconUrl = item.infoIconUrl && item.infoIconUrl.replace(/'/g, '');
+        });
+        this.dataList = this.dataList.concat(data.dataList);
+        this.totalPage = data.totalPage;
+        this.currentPage = data.currentPage + 1;
+        this.$apply();
+      } else {
+        wx.showModal({title: '请求错误', content: message, showCancel: false});
+      }
+    });
+  }
+}
+</script>
+
+<style lang="less">
+.information-page {
+  navigator {
+    display: block;
+    width: 100%;
+    .info-list-item {
+      display: flex;
+      .img-block {
+        flex: none;
+        width: 150rpx;
+        height: 150rpx;
+        image {
+          width: 100%;
+          height: 100%;
+        }
+      }
+      .title-block {
+        flex: auto;
+        padding: 10rpx 0 0 30rpx;
+      }
+    }
+  }
+}
+</style>
