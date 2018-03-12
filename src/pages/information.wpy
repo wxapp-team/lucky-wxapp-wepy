@@ -1,12 +1,12 @@
 <template>
   <view class="container information-page">
-    <repeat for="{{dataItem.dataList}}" index="index" item="item" key="key">
-      <navigator url="/pages/infoDetail?id={{item.activityInformationId}}">
+    <repeat for="{{dataList}}" index="index" item="item" key="key">
+      <navigator url="/pages/infoDetail?id={{item.informationId}}">
         <view class="info-list-item">
           <view class="img-block">
             <image mode="aspectFit" src="{{item.infoIconUrl}}" />
-          </view> 
-          <view class="title-block">{{item.activityInformationTitle}}</view>
+          </view>
+          <view class="title-block">{{item.informationTitle}}</view>
         </view>
       </navigator>
     </repeat>

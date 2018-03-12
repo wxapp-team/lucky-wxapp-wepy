@@ -17,8 +17,8 @@
         <span><i class="iconfont">&#xe889;</i></span>
         <view>说明</view>
       </navigator>
-      <navigator url="/pages/my" hover-class="none" class="navigator-zb">
-        <span><i class="iconfont">&#xe892;</i></span>
+      <navigator url="/pages/my" hover-class="none" class="navigator-my">
+        <span><i class="iconfont">&#xe602;</i></span>
         <view>我的</view>
       </navigator>
       <navigator url="/pages/information" hover-class="none" class="navigator-zb">
@@ -82,12 +82,19 @@ export default class Index extends wepy.page {
           if (status) {
             wx.setStorageSync('token', data);
             this.getAdertiseImages();
-
             this.getLuckysResult();
+            this.whatThing();
           }
         });
+      },
+      fail: e => {
+        console.log(e)
       }
     });
+  }
+
+  whatThing() {
+    L.post(`/APView/activity/join/${this.activityId}/null`);
   }
 
   getAdertiseImages = () => {
@@ -167,6 +174,9 @@ swiper {
     }
     &.navigator-zb span {
       background-color: #03a9f4;
+    }
+    &.navigator-my span {
+      background-color: #ff6600;
     }
   }
 }

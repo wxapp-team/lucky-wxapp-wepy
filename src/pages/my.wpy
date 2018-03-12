@@ -1,0 +1,161 @@
+<template>
+  <view class="container information-page">
+    <repeat for="{{dataList}}" index="index" item="item" key="key">
+      <view class="list-item" @tap="onClickItem({{item}})">
+        <view class="info-list-item">
+          <view class="img-block">{{item.no}}</view>
+          <view class="title-block">{{item.productName}}</view>
+          <view class="time">
+            <view>{{item.createTime}}</view>
+          </view>
+        </view>
+      </view>
+    </repeat>
+  </view>
+</template>
+
+<script>
+import wepy from 'wepy';
+import Toast from 'wepy-com-toast';
+import L from '@/utils';
+
+export default class My extends wepy.page {
+  config = {
+    navigationBarTitleText: '我的',
+    onReachBottomDistance: true
+  };
+  components = {
+    toast: Toast
+  };
+
+  data = {
+    dataList: [],
+    currentPage: 1,
+    totalPage: 0,
+  };
+
+  computed = {};
+
+  methods = {
+    onClickItem: (item) => {
+      if (item.PARTAKE_CATEGORY === '5') {
+        wx.showModal({
+          title: '提示',
+          content: '下载' + item.PARTAKE_CATEGORY_NAME,
+          success: function(res) {
+            if (res.confirm) {
+              wx.showLoading();
+              wx.downloadFile({
+                url: item.picUrl,
+                success: (res) => {
+                  wx.saveImageToPhotosAlbum({
+                    filePath: res.tempFilePath,
+                    success: (res) => {
+                      wx.showModal({
+                        title: '提示',
+                        content: '图片报存到您的相册里了',
+                        showCancel: false,
+                        success: (res) => {
+                          wx.hideLoading();
+                        }
+                      })
+                    },
+                    fail: (res) => {
+                      wx.hideLoading();
+                      console.log('fail:', res);
+                    }
+                  })
+                }
+              })
+            } else if (res.cancel) {
+              console.log('用户点击取消')
+            }
+          }
+        })
+      }
+    }
+  };
+
+  events = {};
+
+  onLoad() {
+    this.activityId = this.$parent.globalData.activityId;
+    this.getInformations();
+  }
+
+  onReachBottom () {
+    if (this.currentPage <= this.totalPage) {
+      this.getInformations();
+    }
+  }
+
+  getInformations = () => {
+    L.post(`/APView/activity/queryPartakeExtList/${this.activityId}/null/null`, {
+      currentPage: this.currentPage,
+      showCount: 10,
+      paramMap: {
+        activityId: this.activityId
+      }
+    }).then(resp => {
+      const {data, status, message} = resp;
+      if (status) {
+        data.forEach((item, index) => {
+          item.no = index < 10 ? '0' + (index + 1) : index;
+          item.picUrl = item.picUrl && item.picUrl.replace(/'/g, '');
+          item.createTime = L.formatAllTime(new Date(item.createTime));
+        });
+        this.dataList = data;
+        this.totalPage = data.totalPage;
+        this.currentPage = data.currentPage + 1;
+        this.$apply();
+      } else {
+        wx.showModal({title: '请求错误', content: message, showCancel: false});
+      }
+    });
+  }
+}
+</script>
+
+<style lang="less">
+.information-page {
+  overflow-y: scroll;
+  .list-item {
+    display: block;
+    width: 100%;
+    position: relative;
+    .info-list-item {
+      display: flex;
+      border-bottom: 1px solid #e9e9e9;
+      .img-block {
+        flex: none;
+        height: 150rpx;
+        line-height: 150rpx;
+        text-align: center;
+        padding: 0 20px;
+        font-size: 35px;
+        color: #ddd;
+        font-weight: bold;
+      }
+      .title-block {
+        flex: auto;
+        display: flex;
+        align-items: center;
+        color: #666;
+      }
+      .time {
+        position:absolute;
+        bottom:-13rpx;
+        width:100%;
+        color:#999;
+        text-align:center;
+        font-size:12px;
+        view {
+          padding: 0 5px;
+          background: #fff;
+          display:inline-block;
+        }
+      }
+    }
+  }
+}
+</style>

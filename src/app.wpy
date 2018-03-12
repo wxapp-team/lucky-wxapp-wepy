@@ -8,13 +8,14 @@ page {
 .container {
   height: 100%;
 }
+
 @font-face {
   font-family: 'iconfont';  /* project id 499055 */
-  src: url('//at.alicdn.com/t/font_499055_pi5946pueplrqkt9.eot');
-  src: url('//at.alicdn.com/t/font_499055_pi5946pueplrqkt9.eot?#iefix') format('embedded-opentype'),
-  url('//at.alicdn.com/t/font_499055_pi5946pueplrqkt9.woff') format('woff'),
-  url('//at.alicdn.com/t/font_499055_pi5946pueplrqkt9.ttf') format('truetype'),
-  url('//at.alicdn.com/t/font_499055_pi5946pueplrqkt9.svg#iconfont') format('svg');
+  src: url('//at.alicdn.com/t/font_499055_gi6kfhjoky5jyvi.eot');
+  src: url('//at.alicdn.com/t/font_499055_gi6kfhjoky5jyvi.eot?#iefix') format('embedded-opentype'),
+  url('//at.alicdn.com/t/font_499055_gi6kfhjoky5jyvi.woff') format('woff'),
+  url('//at.alicdn.com/t/font_499055_gi6kfhjoky5jyvi.ttf') format('truetype'),
+  url('//at.alicdn.com/t/font_499055_gi6kfhjoky5jyvi.svg#iconfont') format('svg');
 }
 
 .iconfont{
@@ -32,7 +33,7 @@ import 'wepy-async-function'
 import L from '@/utils';
 
 L.requestConfig({
-  prefix: 'http://192.168.201.33:8105'
+  prefix: 'https://huodong.hymsy.com.cn'
 }).header(_ => ({
   pluginsId: 'mini_hpst',
   token: wx.getStorageSync('token'),
@@ -44,7 +45,7 @@ L.requestConfig({
   } else {
     if (code === 'TOKEN_OUTOFDATE' || code === 'TOKEN_INVALID' || code === 'TOKEN_CHANGE') {
       wx.clearStorage();
-      wx.reLaunch({url: 'pages/index'});
+      wx.reLaunch({url: '/pages/index'});
     } else {
       wx.showModal({title: '请求错误', content: message || data, showCancel: false});
     }
@@ -60,6 +61,7 @@ export default class extends wepy.app {
       'pages/intro',
       'pages/information',
       'pages/infoDetail',
+      'pages/my',
     ],
     window: {
       backgroundTextStyle: 'light',

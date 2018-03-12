@@ -33,7 +33,7 @@ export default class Intro extends wepy.page {
       const {status, data, message} = resp;
 
       if (status) {
-        const content = data.intrContent.replace(/\[\'/g, '[').replace(/\'\]/g, ']');
+        const content = data.intrContent.replace(/\['/g, '[').replace(/'\]/g, ']');
         WxParse.wxParse('article', 'html', content, this, 5);
       } else {
         wx.showModal({title: '请求错误', content: message, showCancel: false});
